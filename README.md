@@ -4,3 +4,5 @@
 
 Диаграмма классов представлена ниже в виде файла или на [draw.io](https://drive.google.com/file/d/1OcaXvCGxRgbvjMLHHbdlvx2qb1qY7Bw_/view?usp=sharing)
 ![UML](https://.png "UML")
+
+В проекте используется набор внешних библиотек JAXB, доступный для скачивания [здесь](https://javaee.github.io/jaxb-v2/).
