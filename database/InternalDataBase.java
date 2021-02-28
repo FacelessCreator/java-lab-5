@@ -10,11 +10,22 @@ import java.util.TreeSet;
 import movie.Movie;
 import movie.Person;
 
+/**
+ * Data base that stores in a local computer memory
+ * @author Alexandr Shchukin
+ * @version 1.0
+ */
 public class InternalDataBase implements DataBase {
     
+    /** last used identifier */
     private static long lastId = 0;
+
+    /** movies set */
     private TreeSet<Movie> movies;
 
+    /**
+     * Constructor
+     */
     public InternalDataBase()
     {
         movies = new TreeSet<Movie>();
@@ -39,7 +50,7 @@ public class InternalDataBase implements DataBase {
     {
         Movie clonedMovie = movie.clone();
         if (movies.contains(clonedMovie)) {
-            return -1;
+            return MESSAGE_OBJECT_ALREADY_EXISTS;
         } else {
             clonedMovie.setId(++lastId);
             clonedMovie.setCreationTime(LocalDateTime.now());
@@ -48,7 +59,7 @@ public class InternalDataBase implements DataBase {
         }
     }
 
-    public boolean remove(long id)
+    public int remove(long id)
     {
         Iterator<Movie> it = movies.iterator();
         while (it.hasNext())
@@ -57,10 +68,10 @@ public class InternalDataBase implements DataBase {
             if (m.getId() == id)
             {
                 it.remove();
-                return true;
+                return 0;
             }
         }
-        return false;
+        return MESSAGE_OBJECT_NOT_FOUND;
     }
 
     public Movie get(long id)
@@ -77,7 +88,7 @@ public class InternalDataBase implements DataBase {
         return null;
     }
 
-    public boolean replace(long id, Movie movie)
+    public int replace(long id, Movie movie)
     {
         Movie oldMovie = get(id);
         if (oldMovie != null)
@@ -87,9 +98,9 @@ public class InternalDataBase implements DataBase {
             clonedMovie.setCreationTime(oldMovie.getCreationTime());
             movies.remove(oldMovie);
             movies.add(clonedMovie);
-            return true;
+            return 0;
         }
-        return false;
+        return MESSAGE_OBJECT_NOT_FOUND;
     }
 
     public void clear()

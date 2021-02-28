@@ -6,24 +6,35 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+/**
+ * Main class
+ * @author Alexandr Shchukin
+ * @version 1.0
+ */
 public class Main {
+
+    /** default path to save file */
+    private final static String DEFAULT_SAVE_PATH = "dataBase.xml";
+
+    /**
+     * main method
+     * @param args
+     */
     public static void main(String[] args) {
         
-        DataBase base = new InternalDataBase();
-        DataManipulator manipulator = new DataManipulator(base);
-        Person operator = new Person("Denis", "4444", Color.BLACK, Country.RUSSIA);
-        Person operator2 = new Person("Denis", "4443", Color.BLACK, Country.RUSSIA);
-        Movie movie = new Movie("filmez", new Coordinates(5,2), 1, 233, MovieGenre.COMEDY, MpaaRating.PG_13, operator);
-        Movie movie2 = new Movie("filmez2", new Coordinates(-54,2), 3, 754, MovieGenre.HORROR, MpaaRating.PG_13, operator2);
-        Movie movie3 = new Movie("filmez3", new Coordinates(-54,2), 3, 754, MovieGenre.HORROR, MpaaRating.PG_13, operator2);
-        List<Movie> movies = new ArrayList<Movie>();
-        movies.add(movie);
-        movies.add(movie2);
-        movies.add(movie3);
-        manipulator.addAll(movies);
-        
-        Interpreter interpreter = new CommandInterpreter(manipulator);
+        String saveFilePath;
+        if (args.length > 0) {
+            saveFilePath = args[0];
+        } else {
+            saveFilePath = DEFAULT_SAVE_PATH;
+            System.out.printf("[warning] No arguments with save file path. Using default %s\n", saveFilePath);
+        }
+
+        DataBase dataBase = new InternalDataBase();
+        DataManipulator dataManipulator = new DataManipulator(dataBase);
+        Interpreter interpreter = new CommandInterpreter(dataManipulator, saveFilePath);
         Scanner scanner = new Scanner(System.in);
+        interpreter.init(scanner, System.out, true);
         while (true) {
             interpreter.interpret(scanner, System.out, true);
         }

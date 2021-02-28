@@ -18,16 +18,41 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import org.xml.sax.SAXException;
+
+import database.DataBase;
 import database.DataManipulator;
 import movie.*;
 
+/**
+ * Interpreter of console commands
+ * @author Alexandr Shchukin
+ * @version 1.0
+ */
 public class CommandInterpreter implements Interpreter {
 
+    /** attached data manipulator */
     private DataManipulator manipulator;
-    private List<String> history;
-    private final static String HELP_FILEPATH = "help.txt";
-    private final static String SAVE_FILEPATH = "dataBase.xml";
 
+    /** commands history */
+    private List<String> history;
+
+    /** path to help description file */
+    private final static String HELP_FILEPATH = "help.txt";
+
+    /** path to local save file */
+    private String saveFilePath;
+
+    /** level of recursion (increases when user or script uses execute_script command) */
+    private int recursionLevel = 0;
+    
+    /** flag to prevent unexpected recursion */
+    private boolean allowRecursion = false;
+
+    /**
+     * read help page
+     * @return help page or warning message
+     */
     private String readHelp() {
 
         File helpFile = new File(HELP_FILEPATH);
@@ -50,6 +75,19 @@ public class CommandInterpreter implements Interpreter {
         return res.toString();
     }
 
+    /**
+     * interpret enum from input stream
+     * @param <E> enum class
+     * @param clazz enum class
+     * @param in input stream
+     * @param out output stream
+     * @param isFriendly if true, interpreter works in user friendly mode. It has more output and allows to fix incorrect input
+     * @param comment message for user to understand what input program is waiting for
+     * @param allowNull if true, empty string is interpreted as null and result can be null
+     * @return enum object or null
+     * @throws InterpretingFailedException
+     * @throws EOFException
+     */
     private <E extends Enum<E>> E interpretEnum(Class<E> clazz, Scanner in, PrintStream out, boolean isFriendly, String comment, boolean allowNull) throws InterpretingFailedException, EOFException {
         E res;
         List<E> variants = Arrays.asList(clazz.getEnumConstants());
@@ -66,7 +104,7 @@ public class CommandInterpreter implements Interpreter {
                 throw new EOFException("[error] unexpected EOF");
             }
             String enteredLine = in.nextLine();
-            if (enteredLine == "" && allowNull) {
+            if (enteredLine.length() == 0 && allowNull) {
                 return null;
             }
             try {
@@ -81,6 +119,18 @@ public class CommandInterpreter implements Interpreter {
         throw new InterpretingFailedException("[error] cannot understand line");
     }
 
+    /**
+     * interpret long from input stream
+     * @param in input stream
+     * @param out output stream
+     * @param isFriendly if true, interpreter works in user friendly mode. It has more output and allows to fix incorrect input
+     * @param comment message for user to understand what input program is waiting for
+     * @param predicate link to the method that checks if input is correct
+     * @param allowNull if true, empty string is interpreted as null and result can be null
+     * @return long object or null
+     * @throws InterpretingFailedException
+     * @throws EOFException
+     */
     private Long interpretLong(Scanner in, PrintStream out, boolean isFriendly, String comment, Predicate<Long> predicate, boolean allowNull) throws InterpretingFailedException, EOFException {
         do {
             if (isFriendly) {
@@ -90,7 +140,7 @@ public class CommandInterpreter implements Interpreter {
                 throw new EOFException("[error] unexpected EOF");
             }
             String enteredLine = in.nextLine();
-            if (enteredLine == "" && allowNull) {
+            if (enteredLine.length() == 0 && allowNull) {
                 return null;
             }
             try {
@@ -108,6 +158,17 @@ public class CommandInterpreter implements Interpreter {
         throw new InterpretingFailedException("[error] cannot understand line");
     }
 
+    /**
+     * interpret string from input stream
+     * @param in input stream
+     * @param out output stream
+     * @param isFriendly if true, interpreter works in user friendly mode. It has more output and allows to fix incorrect input
+     * @param comment message for user to understand what input program is waiting for
+     * @param predicate link to the method that checks if input is correct
+     * @return string object
+     * @throws InterpretingFailedException
+     * @throws EOFException
+     */
     private String interpretString(Scanner in, PrintStream out, boolean isFriendly, String comment, Predicate<String> predicate) throws InterpretingFailedException, EOFException {
         do {
             if (isFriendly) {
@@ -128,20 +189,49 @@ public class CommandInterpreter implements Interpreter {
         throw new InterpretingFailedException("[error] cannot understand line");
     }
 
+    /**
+     * interpret person from input stream
+     * @param in input stream
+     * @param out output stream
+     * @param isFriendly if true, interpreter works in user friendly mode. It has more output and allows to fix incorrect input
+     * @param allowNull if true, empty string is interpreted as null and result can be null
+     * @return person object or null
+     * @throws InterpretingFailedException
+     * @throws EOFException
+     */
     private Person interpretPerson(Scanner in, PrintStream out, boolean isFriendly, boolean allowNull) throws InterpretingFailedException, EOFException {
         String name = interpretString(in, out, isFriendly, "Input name. It mustn't be empty", s -> s != null && s.length() > 0);
-        String passportId = interpretString(in, out, isFriendly, "Input passpord Id. It's more than 3 symbols or be empty. Press ENTER to left it empty", s -> s == "" || s.length() >= 4);
+        String passportId = interpretString(in, out, isFriendly, "Input passpord Id. It's more than 3 symbols or be empty. Press ENTER to left it empty", s -> s.length() == 0 || s.length() >= 4);
         Color eyeColor = interpretEnum(Color.class, in, out, isFriendly, "Input eye color. Press ENTER to left it null", true);
         Country nationality = interpretEnum(Country.class, in, out, isFriendly, "Input nationality", false);
         return new Person(name, passportId, eyeColor, nationality);
     }
 
+    /**
+     * interpret coordinates from input stream
+     * @param in input stream
+     * @param out output stream
+     * @param isFriendly if true, interpreter works in user friendly mode. It has more output and allows to fix incorrect input
+     * @param allowNull if true, empty string is interpreted as null and result can be null
+     * @return coordinates object or null
+     * @throws InterpretingFailedException
+     * @throws EOFException
+     */
     private Coordinates interpretCoordinates(Scanner in, PrintStream out, boolean isFriendly, boolean allowNull) throws InterpretingFailedException, EOFException {
         int x = interpretLong(in, out, isFriendly, "Input x > -746", i -> i > -746, false).intValue();
         long y = interpretLong(in, out, isFriendly, "Input y > -951", l -> l > -951, false).longValue();
         return new Coordinates(x, y);
     }
 
+    /**
+     * interpret movie from input stream
+     * @param in input stream
+     * @param out output stream
+     * @param isFriendly if true, interpreter works in user friendly mode. It has more output and allows to fix incorrect input
+     * @return movie object
+     * @throws InterpretingFailedException
+     * @throws EOFException
+     */
     private Movie interpretMovie(Scanner in, PrintStream out, boolean isFriendly) throws InterpretingFailedException, EOFException {
         String name = interpretString(in, out, isFriendly, "Input name", s -> s.length() > 0);
         Coordinates coordinates = interpretCoordinates(in, out, isFriendly, false);
@@ -153,21 +243,32 @@ public class CommandInterpreter implements Interpreter {
         return new Movie(name, coordinates, oscarsCount, length, genre, mpaaRating, operator);
     }
 
+    /**
+     * Execute file as commands stream
+     * @param out output stream
+     * @param filePath path to the file
+     */
     private void executeFile(PrintStream out, String filePath) {
+
+        if (recursionLevel > 1 && !allowRecursion) {
+            out.println("[warning] recursion denied. Use flag -r to ignore it");
+            return;
+        }
+
         File scriptFile = new File(filePath);
         if (!scriptFile.exists()) {
-            out.println("file not fount");
+            out.printf("file %s not found\n", filePath);
             return;
         }
         if (!scriptFile.canRead()) {
-            out.println("cannot read file");
+            out.printf("can't read file %s\n", filePath);
             return;
         }
         Scanner fileReader;
         try {
             fileReader = new Scanner(scriptFile);
         } catch (FileNotFoundException e) {
-            out.println("[error] this is not impossible");
+            out.println("[error] this is not possible");
             return;
         }
 
@@ -177,6 +278,12 @@ public class CommandInterpreter implements Interpreter {
         }
     }
 
+    /**
+     * Save movies to local XML file
+     * @param out output stream
+     * @param filePath path to the file
+     * @param movies movies list 
+     */
     private void saveXML(PrintStream out, String filePath, List<Movie> movies) {
         Movies wrappedMovies = new Movies();
         wrappedMovies.setMovies(movies);
@@ -187,15 +294,34 @@ public class CommandInterpreter implements Interpreter {
             File xmlFile = new File(filePath);
             marshaller.marshal(wrappedMovies, xmlFile);
         } catch (JAXBException e) {
-            out.print("[error]");
-            out.println(e);
+            out.printf("[error] saving into file %s failed. ", filePath);
+            Throwable realException = e.getLinkedException();
+            if (realException == null) {
+                out.println("Reason is unusual");
+            } else {
+                if (realException instanceof FileNotFoundException) {
+                    out.println("File not found");
+                } else {
+                    out.println("Reason is unusual");
+                }
+            }
         }
     }
 
+    /**
+     * Check paramenters of coordinates object
+     * @param coordinates
+     * @return are parameters correct
+     */
     private boolean checkCoordinates(Coordinates coordinates) {
         return coordinates.getX() > -746 && coordinates.getY() > -951;
     }
 
+    /**
+     * Check paramenters of operator
+     * @param operator
+     * @return are parameters correct
+     */
     private boolean checkOperator(Person operator) {
         String name = operator.getName();
         String passportId = operator.getPassportId();
@@ -203,10 +329,15 @@ public class CommandInterpreter implements Interpreter {
         return 
             name != null 
             && name.length() > 0 
-            && (passportId == null || passportId.length() >= 4)
+            && (passportId.length() == 0 || passportId.length() >= 4)
             && nationality != null;
     }
 
+    /**
+     * Check paramenters of movie
+     * @param movie
+     * @return are parameters correct
+     */
     private boolean checkMovie(Movie movie) {
         String name = movie.getName();
         long oscarsCount = movie.getOscarsCount();
@@ -223,6 +354,12 @@ public class CommandInterpreter implements Interpreter {
             && (operator == null || checkOperator(operator));
     }
 
+    /**
+     * Load movies from XML file
+     * @param out output stream
+     * @param filePath path to the file
+     * @return list of movies
+     */
     private List<Movie> loadXML(PrintStream out, String filePath) {
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(Movies.class);
@@ -230,25 +367,65 @@ public class CommandInterpreter implements Interpreter {
             File xmlFile = new File(filePath);
             Movies wrappedMovies = (Movies) un.unmarshal(xmlFile);
             List<Movie> movies = new ArrayList<Movie>();
-            for (Movie movie : wrappedMovies.getMovies()) {
+            int countOfBrokenObjects = 0;
+            List<Movie> uncheckedMovies = wrappedMovies.getMovies();
+            if (uncheckedMovies == null) {
+                return null;
+            }
+            for (Movie movie : uncheckedMovies) {
                 if (checkMovie(movie)) {
                     movies.add(movie);
+                } else {
+                    ++countOfBrokenObjects;
                 }
             }
+            if (countOfBrokenObjects > 0) {
+                out.printf("[warning] file %s successfully loaded but %d broken objects were not loaded\n", filePath, countOfBrokenObjects);
+            }
             return movies;
+        } catch (IllegalArgumentException e) {
+            out.printf("[error] file %s is not reachable\n", filePath);
+            return null;
         } catch (JAXBException e) {
-            out.print("[error]");
-            out.println(e);
+            out.printf("[error] loading from file %s failed. ", filePath);
+            Throwable realException = e.getLinkedException();
+            if (realException == null) {
+                out.println("Reason is unusual");
+            } else {
+                if (realException instanceof FileNotFoundException) {
+                    out.println("File not found");
+                } else if (realException instanceof SAXException) {
+                    out.println("XML is broken");
+                } else {
+                    out.println("Reason is unusual");
+                }
+            }
             return null;
         }
     }
 
-    public CommandInterpreter(DataManipulator manipulator) {
+    /**
+     * Constructor
+     * @param manipulator data base manipulator
+     * @param saveFilePath path to save and load XML
+     */
+    public CommandInterpreter(DataManipulator manipulator, String saveFilePath) {
+        this.saveFilePath = saveFilePath;
         this.manipulator = manipulator;
         history = new ArrayList<String>();
     }
 
+    public void init(Scanner in, PrintStream out, boolean isFriendly) {
+        List<Movie> movies = loadXML(out, saveFilePath);
+        if (movies != null) {
+            manipulator.clear();
+            manipulator.addAll(movies);
+        }
+    }
+
     public void interpret(Scanner in, PrintStream out, boolean isFriendly) {
+
+        ++recursionLevel;
 
         if (isFriendly) {
             out.print("> ");
@@ -277,6 +454,7 @@ public class CommandInterpreter implements Interpreter {
         out.println();*/
 
         if (args.size() == 0) {
+            --recursionLevel;
             return;
         }
 
@@ -338,8 +516,9 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    if (manipulator.add(movie) == -1) {
-                        out.println("adding failed");
+                    long errorCode = manipulator.add(movie);
+                    if (errorCode == DataBase.MESSAGE_OBJECT_ALREADY_EXISTS) {
+                        out.println("[warning] adding failed. Object already exists");
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -358,9 +537,11 @@ public class CommandInterpreter implements Interpreter {
                         int id = Integer.valueOf(args.get(1));
                         try {
                             Movie movie = interpretMovie(in, out, isFriendly);
-                            boolean res = manipulator.replace(id, movie);
-                            if (!res && isFriendly) {
-                                out.println("update failed");
+                            int res = manipulator.replace(id, movie);
+                            if (isFriendly && res != 0) {
+                                if (res == DataBase.MESSAGE_OBJECT_NOT_FOUND) {
+                                    out.println("[warning] updating failed. Object not found");
+                                }
                             }
                         } catch (EOFException | InterpretingFailedException e) {
                             out.println(e.getMessage());
@@ -383,9 +564,11 @@ public class CommandInterpreter implements Interpreter {
                 } else {
                     try {
                         int id = Integer.valueOf(args.get(1));
-                        boolean res = manipulator.remove(id);
-                        if (!res && isFriendly) {
-                            out.println("removing failed");
+                        int res = manipulator.remove(id);
+                        if (isFriendly && res != 0) {
+                            if (res == DataBase.MESSAGE_OBJECT_NOT_FOUND) {
+                                out.println("[warning] updating failed. Object not found");
+                            }
                         }
                     } catch (NumberFormatException e) {
                         if (isFriendly) {
@@ -401,7 +584,7 @@ public class CommandInterpreter implements Interpreter {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
                     if (!manipulator.addIfMax(movie)) {
-                        out.println("adding failed");
+                        out.println("[normal] your object is not maximum");
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -438,6 +621,14 @@ public class CommandInterpreter implements Interpreter {
                         out.println("wrong arguments");
                     }
                 } else {
+                    if (recursionLevel == 1) {
+                        if (args.size() >= 3 && args.get(2).equals("-r")) {
+                            allowRecursion = true;
+                        } else {
+                            allowRecursion = false;
+                        }
+                    }
+                    
                     executeFile(out, args.get(1));
                 }
             }
@@ -446,13 +637,13 @@ public class CommandInterpreter implements Interpreter {
             case "save":
             {
                 List<Movie> movies = manipulator.getAll();
-                saveXML(out, SAVE_FILEPATH, movies);
+                saveXML(out, saveFilePath, movies);
             }    
             break;
 
             case "load":
             {
-                List<Movie> movies = loadXML(out, SAVE_FILEPATH);
+                List<Movie> movies = loadXML(out, saveFilePath);
                 if (movies != null) {
                     manipulator.clear();
                     manipulator.addAll(movies);
@@ -466,6 +657,8 @@ public class CommandInterpreter implements Interpreter {
                 break;
         }
         
+        --recursionLevel;
+
     }
 
     

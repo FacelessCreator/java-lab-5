@@ -7,15 +7,29 @@ import java.util.List;
 import movie.Movie;
 import movie.Person;
 
+/**
+ * Interlayer between data base interface and another parts of program. Extends default methods of data base
+ * @author Alexandr Shchukin
+ * @version 1.0
+ */
 public class DataManipulator {
     
+    /** data base to interract */
     private DataBase dataBase;
 
+    /**
+     * Constructor
+     * @param dataBase
+     */
     public DataManipulator(DataBase dataBase)
     {
         this.dataBase = dataBase;
     }
 
+    /**
+     * describe data base
+     * @return description
+     */
     public String getInfo()
     {
         StringBuilder res = new StringBuilder();
@@ -28,11 +42,20 @@ public class DataManipulator {
         return res.toString();
     }
 
+    /**
+     * get object with id
+     * @param id
+     * @return movie or null
+     */
     public Movie get(long id)
     {
         return dataBase.get(id);
     }
 
+    /**
+     * get all objects
+     * @return list of movies
+     */
     public List<Movie> getAll()
     {
         List<Movie> res = new ArrayList<Movie>();
@@ -44,11 +67,21 @@ public class DataManipulator {
         return res;
     }
 
+    /**
+     * add movie to data base
+     * @param movie
+     * @return object identifier or message code
+     */
     public long add(Movie movie)
     {
         return dataBase.add(movie);
     }
 
+    /**
+     * Add objects to data base
+     * @param movies list of movies
+     * @return list of identifiers or message codes
+     */
     public List<Long> addAll(List<Movie> movies)
     {
         List<Long> res = new ArrayList<Long>();
@@ -60,21 +93,40 @@ public class DataManipulator {
         return res;
     }
 
-    public boolean replace(long id, Movie movie)
+    /**
+     * replace object with another object (doesn't change id)
+     * @param id id of existing object
+     * @param movie another object
+     * @return message code
+     */
+    public int replace(long id, Movie movie)
     {
         return dataBase.replace(id, movie);
     }
 
-    public boolean remove(long id)
+    /**
+     * remove object with id
+     * @param id
+     * @return message code
+     */
+    public int remove(long id)
     {
         return dataBase.remove(id);
     }
 
+    /** 
+     * remove all objects from data base
+     */
     public void clear()
     {
         dataBase.clear();
     }
 
+    /**
+     * Add object if it's higher than max element in data base
+     * @param movie
+     * @return result
+     */
     public boolean addIfMax(Movie movie)
     {
         Movie maxElement = dataBase.getMaxElement();
@@ -86,6 +138,10 @@ public class DataManipulator {
         return false;
     }
 
+    /**
+     * Remove all objects lower than this object
+     * @param movie
+     */
     public void removeLower(Movie movie)
     {
         List<Movie> elements = getAll();
@@ -98,6 +154,10 @@ public class DataManipulator {
         }
     }
 
+    /**
+     * Remove all movies with this operator
+     * @param operator
+     */
     public void removeAllByOperator(Person operator)
     {
         List<Movie> elements = dataBase.searchByOperator(operator);
@@ -107,6 +167,10 @@ public class DataManipulator {
         }
     }
 
+    /**
+     * Calculate summ of oscars for data base elements
+     * @return summ
+     */
     public long getSumOfOscarsCount()
     {
         List<Movie> elements = getAll();
@@ -118,6 +182,10 @@ public class DataManipulator {
         return res;
     }
 
+    /**
+     * Count of movies with the same oscars count
+     * @return hash map where keys are oscars count and values are movies count
+     */
     public HashMap<Long, Long> getGroupCountingByOscarsCount()
     {
         List<Movie> elements = getAll();

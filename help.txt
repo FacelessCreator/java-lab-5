@@ -8,7 +8,7 @@ remove_by_id ID - remove object from data base
 clear - delete all objects from data base
 save - save data base to local XML file
 load - load data base from local XML file
-execute_script FILENAME - execute command file line by line
+execute_script FILENAME [-r] - execute command file line by line. To allow recursion, use flag -r
 exit | ^D - escape from program
 add_if_max - add object of it is larger than the max object in data base. Uses user-friendly input
 remove_lower - delete all objects from data base smaller than this. Uses user-friendly input
