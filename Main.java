@@ -27,7 +27,7 @@ public class Main {
             saveFilePath = args[0];
         } else {
             saveFilePath = DEFAULT_SAVE_PATH;
-            System.out.printf("[warning] No arguments with save file path. Using default %s\n", saveFilePath);
+            System.out.printf("[warning] No arguments with save file path. Using default %s. View help to understand how to change save file path\n", saveFilePath);
         }
 
         DataBase dataBase = new InternalDataBase();

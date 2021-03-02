@@ -16,3 +16,4 @@ history [-a] - show list of used commands. By default it shows last 9 commands. 
 remove_all_by_operator - delete all objects with this operator. Uses user-friendly input
 sum_of_oscars_count - view sum of oscars in data base
 group_counting_by_oscars_count - view count of movies for each oscars count
+save_file_path [PATH] - view current path to save file or change it to PATH value

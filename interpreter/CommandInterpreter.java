@@ -57,9 +57,9 @@ public class CommandInterpreter implements Interpreter {
 
         File helpFile = new File(HELP_FILEPATH);
         if (!helpFile.exists())
-            return "[warning] Nobody helps you";
+            return "[error] Reading "+HELP_FILEPATH+" failed. File doesn't exist. Nobody helps you";
         if (!helpFile.canRead())
-            return "[warning] Help reading failed";
+            return "[error] Reading "+HELP_FILEPATH+" failed. Permission denied";
         Scanner fileReader;
         try {
             fileReader = new Scanner(helpFile);
@@ -251,17 +251,17 @@ public class CommandInterpreter implements Interpreter {
     private void executeFile(PrintStream out, String filePath) {
 
         if (recursionLevel > 1 && !allowRecursion) {
-            out.println("[warning] recursion denied. Use flag -r to ignore it");
+            out.println("[warning] Recursion denied. Use flag -r to ignore it");
             return;
         }
 
         File scriptFile = new File(filePath);
         if (!scriptFile.exists()) {
-            out.printf("file %s not found\n", filePath);
+            out.printf("[warning] File %s not found\n", filePath);
             return;
         }
         if (!scriptFile.canRead()) {
-            out.printf("can't read file %s\n", filePath);
+            out.printf("[warning] Can't read file %s - permission denied\n", filePath);
             return;
         }
         Scanner fileReader;
@@ -300,7 +300,7 @@ public class CommandInterpreter implements Interpreter {
                 out.println("Reason is unusual");
             } else {
                 if (realException instanceof FileNotFoundException) {
-                    out.println("File not found");
+                    out.println("Writing permission denied");
                 } else {
                     out.println("Reason is unusual");
                 }
@@ -365,6 +365,14 @@ public class CommandInterpreter implements Interpreter {
             JAXBContext jaxbContext = JAXBContext.newInstance(Movies.class);
             Unmarshaller un = jaxbContext.createUnmarshaller();
             File xmlFile = new File(filePath);
+            if (!xmlFile.exists()) {
+                out.printf("[error] Loading from file %s failed. File does not exist\n", filePath);
+                return null;
+            }
+            if (!xmlFile.canRead()) {
+                out.printf("[error] loading from file %s failed. Reading permission denied\n", filePath);
+                return null;
+            }
             Movies wrappedMovies = (Movies) un.unmarshal(xmlFile);
             List<Movie> movies = new ArrayList<Movie>();
             int countOfBrokenObjects = 0;
@@ -383,18 +391,13 @@ public class CommandInterpreter implements Interpreter {
                 out.printf("[warning] file %s successfully loaded but %d broken objects were not loaded\n", filePath, countOfBrokenObjects);
             }
             return movies;
-        } catch (IllegalArgumentException e) {
-            out.printf("[error] file %s is not reachable\n", filePath);
-            return null;
         } catch (JAXBException e) {
             out.printf("[error] loading from file %s failed. ", filePath);
             Throwable realException = e.getLinkedException();
             if (realException == null) {
                 out.println("Reason is unusual");
             } else {
-                if (realException instanceof FileNotFoundException) {
-                    out.println("File not found");
-                } else if (realException instanceof SAXException) {
+                if (realException instanceof SAXException) {
                     out.println("XML is broken");
                 } else {
                     out.println("Reason is unusual");
@@ -647,6 +650,16 @@ public class CommandInterpreter implements Interpreter {
                 if (movies != null) {
                     manipulator.clear();
                     manipulator.addAll(movies);
+                }
+            }
+            break;
+
+            case "save_file_path":
+            {
+                if (args.size() < 2) {
+                    out.println(saveFilePath);
+                } else {
+                    saveFilePath = args.get(1);
                 }
             }
             break;
