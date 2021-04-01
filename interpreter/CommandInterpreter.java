@@ -21,6 +21,7 @@ import javax.xml.bind.Unmarshaller;
 import org.xml.sax.SAXException;
 
 import database.DataBase;
+import database.DataBaseAnswer;
 import database.DataManipulator;
 import movie.*;
 
@@ -407,6 +408,31 @@ public class CommandInterpreter implements Interpreter {
         }
     }
 
+    private String describeAnswerCode(int code) {
+        String res;
+        switch (code) {
+            case DataBaseAnswer.CODE_SUCCESS:
+                res = "All is OK";
+                break;
+            case DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS:
+                res = "Object already exists";
+                break;
+            case DataBaseAnswer.CODE_OBJECT_NOT_FOUND:
+                res = "Object not found";
+                break;
+            case DataBaseAnswer.CODE_CONNECTION_FAILED:
+                res = "Connection failed";
+                break;
+            case DataBaseAnswer.CODE_BAD_ANSWER:
+                res = "Bad server answer";
+                break;
+            default:
+                res = "Unknown code";
+                break;
+        }
+        return res;
+    }
+
     /**
      * Constructor
      * @param manipulator data base manipulator
@@ -421,8 +447,14 @@ public class CommandInterpreter implements Interpreter {
     public void init(Scanner in, PrintStream out, boolean isFriendly) {
         List<Movie> movies = loadXML(out, saveFilePath);
         if (movies != null) {
-            manipulator.clear();
-            manipulator.addAll(movies);
+            DataBaseAnswer<Void> clearAnswer = manipulator.clear();
+            if (clearAnswer.code != 0) {
+                out.println(describeAnswerCode(clearAnswer.code));
+            }
+            DataBaseAnswer<List<Long>> addAnswer = manipulator.addAll(movies);
+            if (addAnswer.code != 0) {
+                out.println(describeAnswerCode(addAnswer.code));
+            }
         }
     }
 
@@ -481,20 +513,34 @@ public class CommandInterpreter implements Interpreter {
                 break;
 
             case "info":
-                out.println(manipulator.getInfo());
+            {
+                DataBaseAnswer<String> answer = manipulator.getInfo();
+                if (answer.code == 0) {
+                    out.println(answer.object);
+                } else {
+                    out.println(describeAnswerCode(answer.code));
+                }
+            }
                 break;
-
             case "show":
             {
-                List<Movie> movies = manipulator.getAll();
-                for (Movie movie : movies) {
+                DataBaseAnswer<List<Movie>> answer = manipulator.getAll();
+                if (answer.code != 0) {
+                    out.println(describeAnswerCode(answer.code));
+                }
+                for (Movie movie : answer.object) {
                     out.println(movie);
                 }
             }
-            break;
+                break;
 
             case "clear":
-                manipulator.clear();
+            {
+                DataBaseAnswer<Void> answer = manipulator.clear();
+                if (answer.code != 0) {
+                    out.println(describeAnswerCode(answer.code));
+                }
+            }
                 break;
 
             case "exit":
@@ -502,15 +548,26 @@ public class CommandInterpreter implements Interpreter {
                 break;
 
             case "sum_of_oscars_count":
-                out.println(manipulator.getSumOfOscarsCount());
+            {
+                DataBaseAnswer<Long> answer = manipulator.getSumOfOscarsCount();
+                if (answer.code != 0) {
+                    out.println(describeAnswerCode(answer.code));
+                } else {
+                    out.println(answer.object.longValue());
+                }
+            }
                 break;
 
             case "group_counting_by_oscars_count":
             {
-                HashMap<Long, Long> groups = manipulator.getGroupCountingByOscarsCount();
-                for (Long key : groups.keySet())
-                {
-                    System.out.printf("%d oscars : %d films\n", key.longValue(), groups.get(key).longValue());
+                DataBaseAnswer<HashMap<Long, Long>> answer = manipulator.getGroupCountingByOscarsCount();
+                if (answer.code != 0) {
+                    out.println(describeAnswerCode(answer.code));
+                } else {
+                    for (Long key : answer.object.keySet())
+                    {
+                        System.out.printf("%d oscars : %d films\n", key.longValue(), answer.object.get(key).longValue());
+                    }
                 }
             }
             break;
@@ -519,9 +576,11 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    long errorCode = manipulator.add(movie);
-                    if (errorCode == DataBase.MESSAGE_OBJECT_ALREADY_EXISTS) {
-                        out.println("[warning] adding failed. Object already exists");
+                    DataBaseAnswer<Long> answer = manipulator.add(movie);
+                    if (answer.code != 0) {
+                        out.println(describeAnswerCode(answer.code));
+                    } else {
+                        out.printf("Object added; id: %d\n", answer.object.longValue());
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -540,11 +599,9 @@ public class CommandInterpreter implements Interpreter {
                         int id = Integer.valueOf(args.get(1));
                         try {
                             Movie movie = interpretMovie(in, out, isFriendly);
-                            int res = manipulator.replace(id, movie);
-                            if (isFriendly && res != 0) {
-                                if (res == DataBase.MESSAGE_OBJECT_NOT_FOUND) {
-                                    out.println("[warning] updating failed. Object not found");
-                                }
+                            DataBaseAnswer<Void> answer = manipulator.replace(id, movie);
+                            if (answer.code != 0) {
+                                out.println(describeAnswerCode(answer.code));
                             }
                         } catch (EOFException | InterpretingFailedException e) {
                             out.println(e.getMessage());
@@ -567,11 +624,9 @@ public class CommandInterpreter implements Interpreter {
                 } else {
                     try {
                         int id = Integer.valueOf(args.get(1));
-                        int res = manipulator.remove(id);
-                        if (isFriendly && res != 0) {
-                            if (res == DataBase.MESSAGE_OBJECT_NOT_FOUND) {
-                                out.println("[warning] updating failed. Object not found");
-                            }
+                        DataBaseAnswer<Void> answer = manipulator.remove(id);
+                        if (answer.code != 0) {
+                            out.println(describeAnswerCode(answer.code));
                         }
                     } catch (NumberFormatException e) {
                         if (isFriendly) {
@@ -586,8 +641,13 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    if (!manipulator.addIfMax(movie)) {
-                        out.println("[normal] your object is not maximum");
+                    DataBaseAnswer<Boolean> answer = manipulator.addIfMax(movie);
+                    if (answer.code != 0) {
+                        out.println(describeAnswerCode(answer.code));
+                    } else {
+                        if (!answer.object.booleanValue()) {
+                            out.println("[normal] your object is not maximum");
+                        }
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -599,7 +659,10 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    manipulator.removeLower(movie);
+                    DataBaseAnswer<Void> answer = manipulator.removeLower(movie);
+                    if (answer.code != 0) {
+                        out.println(describeAnswerCode(answer.code));
+                    }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
                 }
@@ -610,7 +673,10 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Person operator = interpretPerson(in, out, isFriendly, false);
-                    manipulator.removeAllByOperator(operator);
+                    DataBaseAnswer<Void> answer = manipulator.removeAllByOperator(operator);
+                    if (answer.code != 0) {
+                        out.println(describeAnswerCode(answer.code));
+                    }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
                 }
@@ -639,8 +705,12 @@ public class CommandInterpreter implements Interpreter {
 
             case "save":
             {
-                List<Movie> movies = manipulator.getAll();
-                saveXML(out, saveFilePath, movies);
+                DataBaseAnswer<List<Movie>> answer = manipulator.getAll();
+                if (answer.code != 0) {
+                    out.println(describeAnswerCode(answer.code));
+                } else {
+                    saveXML(out, saveFilePath, answer.object);
+                }
             }    
             break;
 
@@ -648,8 +718,14 @@ public class CommandInterpreter implements Interpreter {
             {
                 List<Movie> movies = loadXML(out, saveFilePath);
                 if (movies != null) {
-                    manipulator.clear();
-                    manipulator.addAll(movies);
+                    DataBaseAnswer<Void> clearAnswer = manipulator.clear();
+                    if (clearAnswer.code != 0) {
+                        out.println(describeAnswerCode(clearAnswer.code));
+                    }
+                    DataBaseAnswer<List<Long>> addAnswer = manipulator.addAll(movies);
+                    if (addAnswer.code != 0) {
+                        out.println(describeAnswerCode(addAnswer.code));
+                    }
                 }
             }
             break;

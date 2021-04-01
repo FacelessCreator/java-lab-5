@@ -31,35 +31,35 @@ public class InternalDataBase implements DataBase {
         movies = new TreeSet<Movie>();
     }
 
-    public String about()
+    public DataBaseAnswer<String> about()
     {
-        return "Internal data base. Uses " + movies.getClass().getName() + " as container";
+        return new DataBaseAnswer<String>(DataBaseAnswer.CODE_SUCCESS, "Internal data base. Uses " + movies.getClass().getName() + " as container");
     }
 
-    public String getStatus()
+    public DataBaseAnswer<String> getStatus()
     {
-        return "Available";
+        return new DataBaseAnswer<String>(DataBaseAnswer.CODE_SUCCESS, "Available");
     }
 
-    public int length()
+    public DataBaseAnswer<Integer> length()
     {
-        return movies.size();
+        return new DataBaseAnswer<Integer>(DataBaseAnswer.CODE_SUCCESS, movies.size());
     }
 
-    public long add(Movie movie)
+    public DataBaseAnswer<Long> add(Movie movie)
     {
         Movie clonedMovie = movie.clone();
         if (movies.contains(clonedMovie)) {
-            return MESSAGE_OBJECT_ALREADY_EXISTS;
+            return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS, null);
         } else {
             clonedMovie.setId(++lastId);
             clonedMovie.setCreationTime(LocalDateTime.now());
             movies.add(clonedMovie);
-            return lastId;
+            return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_SUCCESS, lastId);
         }
     }
 
-    public int remove(long id)
+    public DataBaseAnswer<Void> remove(long id)
     {
         Iterator<Movie> it = movies.iterator();
         while (it.hasNext())
@@ -68,13 +68,13 @@ public class InternalDataBase implements DataBase {
             if (m.getId() == id)
             {
                 it.remove();
-                return 0;
+                return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_SUCCESS, null);
             }
         }
-        return MESSAGE_OBJECT_NOT_FOUND;
+        return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_OBJECT_NOT_FOUND, null);
     }
 
-    public Movie get(long id)
+    public DataBaseAnswer<Movie> get(long id)
     {
         Iterator<Movie> it = movies.iterator();
         while (it.hasNext())
@@ -82,33 +82,35 @@ public class InternalDataBase implements DataBase {
             Movie m = it.next();
             if (m.getId() == id)
             {
-                return m.clone();
+                return new DataBaseAnswer<Movie>(DataBaseAnswer.CODE_SUCCESS, m.clone());
             }
         }
-        return null;
+        return new DataBaseAnswer<Movie>(DataBaseAnswer.CODE_OBJECT_NOT_FOUND, null);
     }
 
-    public int replace(long id, Movie movie)
+    public DataBaseAnswer<Void> replace(long id, Movie movie)
     {
-        Movie oldMovie = get(id);
-        if (oldMovie != null)
-        {
-            Movie clonedMovie = movie.clone();
-            clonedMovie.setId(id);
-            clonedMovie.setCreationTime(oldMovie.getCreationTime());
-            movies.remove(oldMovie);
-            movies.add(clonedMovie);
-            return 0;
+        DataBaseAnswer<Movie> oldMovieAnswer = get(id);
+        
+        if (oldMovieAnswer.code != DataBaseAnswer.CODE_SUCCESS) {
+            return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_OBJECT_NOT_FOUND, null);
         }
-        return MESSAGE_OBJECT_NOT_FOUND;
+
+        Movie clonedMovie = movie.clone();
+        clonedMovie.setId(id);
+        clonedMovie.setCreationTime(oldMovieAnswer.object.getCreationTime());
+        movies.remove(oldMovieAnswer.object);
+        movies.add(clonedMovie);
+        return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_SUCCESS, null);
     }
 
-    public void clear()
+    public DataBaseAnswer<Void> clear()
     {
         movies.clear();
+        return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_SUCCESS, null);
     }
 
-    public List<Long> getIdList()
+    public DataBaseAnswer<List<Long>> getIdList()
     {
         List<Long> res = new ArrayList<Long>();
         Iterator<Movie> it = movies.iterator();
@@ -117,10 +119,10 @@ public class InternalDataBase implements DataBase {
             Movie m = it.next();
             res.add(m.getId());
         }
-        return res;
+        return new DataBaseAnswer<List<Long>>(DataBaseAnswer.CODE_SUCCESS, res);
     }
 
-    public Movie getMaxElement()
+    public DataBaseAnswer<Movie> getMaxElement()
     {
         Movie res;
         try {
@@ -128,10 +130,10 @@ public class InternalDataBase implements DataBase {
         } catch (NoSuchElementException e) {
             res = null;
         }
-        return res;
+        return new DataBaseAnswer<Movie>(DataBaseAnswer.CODE_SUCCESS, res);
     }
 
-    public Movie getMinElement()
+    public DataBaseAnswer<Movie> getMinElement()
     {
         Movie res;
         try {
@@ -139,11 +141,11 @@ public class InternalDataBase implements DataBase {
         } catch (NoSuchElementException e) {
             res = null;
         }
-        return res;
+        return new DataBaseAnswer<Movie>(DataBaseAnswer.CODE_SUCCESS, res);
     }
 
-    public List<Movie> searchByOperator(Person operator)
-    {
+    public DataBaseAnswer<List<Movie>> searchByOperator(Person operator)
+    { 
         List<Movie> res = new ArrayList<Movie>();
         Iterator<Movie> it = movies.iterator();
         while (it.hasNext())
@@ -155,7 +157,7 @@ public class InternalDataBase implements DataBase {
                 res.add(m.clone());
             }
         }
-        return res;
+        return new DataBaseAnswer<List<Movie>>(DataBaseAnswer.CODE_SUCCESS, res);
     }
 
 }

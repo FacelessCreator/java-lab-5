@@ -1,5 +1,6 @@
 package movie;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import javax.xml.bind.annotation.*;
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.*;
 @XmlType(name = "movie")
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class Movie implements Comparable<Movie> {
+public class Movie implements Comparable<Movie>, Serializable {
     
     /** unique identifier */
     private long id = -1;

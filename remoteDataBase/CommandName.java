@@ -1,0 +1,5 @@
+package remoteDataBase;
+
+public enum CommandName {
+    ABOUT, GET_STATUS, LENGTH, ADD, REMOVE, GET, REPLACE, CLEAR, GET_ID_LIST, GET_MAX_ELEMENT, GET_MIN_ELEMENT, SEARCH_BY_OPERATOR;
+}

@@ -1,5 +1,7 @@
 package movie;
 
+import java.io.Serializable;
+
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -10,7 +12,7 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlType(name = "coordinates")
 @XmlRootElement
-public class Coordinates {
+public class Coordinates implements Serializable {
     
     /** x coordinate */
     private int x;
