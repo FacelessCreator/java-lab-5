@@ -14,7 +14,7 @@ import etc.Serializing;
 import movie.*;
 
 public class RemoteDataBase implements DataBase {
-    
+
     private String host;
     private int port;
 
@@ -33,16 +33,21 @@ public class RemoteDataBase implements DataBase {
             out.writeInt(objData.length);
             outputStream.write(objData);
             outputStream.flush();
-            
+
             DataInputStream in = new DataInputStream(inputStream);
             int answerLength = in.readInt();
             byte[] answerData = in.readAllBytes();
-            Object answerObject = Serializing.deserializeObject(answerData);
+            Object answerObject = null;
+            try {
+                answerObject = Serializing.deserializeObject(answerData);
+            } catch (ClassNotFoundException e) {
+                return new DataBaseAnswer<String>(DataBaseAnswer.CODE_BAD_ANSWER, null);
+            }
             socket.close();
             return answerObject;
         } catch (IOException e) {
-            System.err.println(e);
-            return null;
+            //System.err.println(e);
+            return new DataBaseAnswer<String>(DataBaseAnswer.CODE_CONNECTION_FAILED, null);
         }
     }
 

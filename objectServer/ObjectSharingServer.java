@@ -74,7 +74,12 @@ public class ObjectSharingServer {
             byte[] clientObjectData = new byte[summaryLength];
             summaryDataBuffer.position(4);
             summaryDataBuffer.get(clientObjectData, 0, summaryLength);
-            Object clientObject = Serializing.deserializeObject(clientObjectData);
+            Object clientObject = null;
+            try {
+                clientObject = Serializing.deserializeObject(clientObjectData);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
             if (clientObject != null) {
                 Object answerObject = answerer.apply(clientObject);
                 // there we send object back

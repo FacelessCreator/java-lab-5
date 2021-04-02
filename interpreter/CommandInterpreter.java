@@ -415,19 +415,19 @@ public class CommandInterpreter implements Interpreter {
                 res = "All is OK";
                 break;
             case DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS:
-                res = "Object already exists";
+                res = "[warning] Object already exists";
                 break;
             case DataBaseAnswer.CODE_OBJECT_NOT_FOUND:
-                res = "Object not found";
+                res = "[warning] Object not found";
                 break;
             case DataBaseAnswer.CODE_CONNECTION_FAILED:
-                res = "Connection failed";
+                res = "[error] Connection failed";
                 break;
             case DataBaseAnswer.CODE_BAD_ANSWER:
-                res = "Bad server answer";
+                res = "[error] Bad server answer";
                 break;
             default:
-                res = "Unknown code";
+                res = "[error] Unknown code";
                 break;
         }
         return res;
