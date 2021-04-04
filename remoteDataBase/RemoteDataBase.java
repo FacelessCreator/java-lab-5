@@ -36,7 +36,8 @@ public class RemoteDataBase implements DataBase {
 
             DataInputStream in = new DataInputStream(inputStream);
             int answerLength = in.readInt();
-            byte[] answerData = in.readAllBytes();
+            byte[] answerData = new byte[answerLength];
+            in.readFully(answerData);
             Object answerObject = null;
             try {
                 answerObject = Serializing.deserializeObject(answerData);
@@ -168,6 +169,26 @@ public class RemoteDataBase implements DataBase {
             return res;
         } catch (ClassCastException e) {
             return new DataBaseAnswer<List<Movie>>(DataBaseAnswer.CODE_BAD_ANSWER, null);
+        }
+    }
+
+    public DataBaseAnswer<Void> load() {
+        CommandWrapper command = new CommandWrapper(CommandName.LOAD);
+        try {
+            DataBaseAnswer<Void> res = (DataBaseAnswer<Void>) request(host, port, command);
+            return res;
+        } catch (ClassCastException e) {
+            return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_BAD_ANSWER, null);
+        }
+    }
+
+    public DataBaseAnswer<Void> save() {
+        CommandWrapper command = new CommandWrapper(CommandName.SAVE);
+        try {
+            DataBaseAnswer<Void> res = (DataBaseAnswer<Void>) request(host, port, command);
+            return res;
+        } catch (ClassCastException e) {
+            return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_BAD_ANSWER, null);
         }
     }
 }

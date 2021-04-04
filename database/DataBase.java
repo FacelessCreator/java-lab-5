@@ -87,4 +87,8 @@ public interface DataBase {
      * @return movies list
      */
     DataBaseAnswer<List<Movie>> searchByOperator(Person operator);
+
+    DataBaseAnswer<Void> load();
+
+    DataBaseAnswer<Void> save();
 }

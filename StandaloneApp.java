@@ -27,12 +27,13 @@ public class StandaloneApp {
             saveFilePath = args[0];
         } else {
             saveFilePath = DEFAULT_SAVE_PATH;
-            System.out.printf("[warning] No arguments with save file path. Using default %s. View help to understand how to change save file path\n", saveFilePath);
+            System.out.printf("[warning] No arguments with save file path. Using default %s\n", saveFilePath);
         }
 
-        DataBase dataBase = new InternalDataBase();
+        DataBase dataBase = new InternalDataBase(saveFilePath);
         DataManipulator dataManipulator = new DataManipulator(dataBase);
-        Interpreter interpreter = new CommandInterpreter(dataManipulator, saveFilePath);
+        dataManipulator.load();
+        Interpreter interpreter = new CommandInterpreter(dataManipulator);
         Scanner scanner = new Scanner(System.in);
         interpreter.init(scanner, System.out, true);
         while (true) {

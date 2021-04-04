@@ -56,6 +56,14 @@ public class ObjectCommandInterpreter {
                 case SEARCH_BY_OPERATOR:
                     result = dataBase.searchByOperator((Person) args.get(0));
                     break;
+                case LOAD:
+                    result = new DataBaseAnswer<Void>(DataBaseAnswer.CODE_PERMISSION_DENIED, null);
+                    //result = dataBase.load();
+                    break;
+                case SAVE:
+                    result = new DataBaseAnswer<Void>(DataBaseAnswer.CODE_PERMISSION_DENIED, null);
+                    //result = dataBase.save();
+                    break;
                 default:
                     result = new DataBaseAnswer<Void>(DataBaseAnswer.CODE_BAD_REQUEST, null);
                     break; 

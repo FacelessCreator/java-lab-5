@@ -16,6 +16,10 @@ public class DataBaseAnswer<T> implements Serializable {
 
     public static final int CODE_BAD_REQUEST = -5;
 
+    public static final int CODE_PERMISSION_DENIED = -6;
+
+    public static final int CODE_INTERNAL_ERROR = -7;
+
     public int code;
     public T object;
     public DataBaseAnswer(int code, T object) {

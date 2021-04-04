@@ -1,10 +1,7 @@
-import movie.*;
 import remoteDataBase.RemoteDataBase;
 import database.*;
 import interpreter.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -14,26 +11,28 @@ import java.util.Scanner;
  */
 public class Client {
 
-    /** default path to save file */
-    private final static String DEFAULT_SAVE_PATH = "dataBase.xml";
-
     /**
      * main method
      * @param args
      */
     public static void main(String[] args) {
-        
-        String saveFilePath;
-        if (args.length > 0) {
-            saveFilePath = args[0];
+
+        int port;
+        if (args.length < 1) {
+            System.out.println("Invalid arguments. Add port number");
+            return;
         } else {
-            saveFilePath = DEFAULT_SAVE_PATH;
-            System.out.printf("[warning] No arguments with save file path. Using default %s. View help to understand how to change save file path\n", saveFilePath);
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid arguments. Add port number");
+                return;
+            }
         }
 
-        RemoteDataBase dataBase = new RemoteDataBase("localhost", 8080);
+        RemoteDataBase dataBase = new RemoteDataBase("localhost", port);
         DataManipulator dataManipulator = new DataManipulator(dataBase);
-        Interpreter interpreter = new CommandInterpreter(dataManipulator, saveFilePath);
+        Interpreter interpreter = new CommandInterpreter(dataManipulator);
         Scanner scanner = new Scanner(System.in);
         interpreter.init(scanner, System.out, true);
         while (true) {

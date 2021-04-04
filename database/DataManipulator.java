@@ -252,4 +252,14 @@ public class DataManipulator {
         return new DataBaseAnswer<HashMap<Long, Long>>(0, groups);
     }
 
+    public DataBaseAnswer<Void> load()
+    {
+        return dataBase.load();
+    } 
+
+    public DataBaseAnswer<Void> save()
+    {
+        return dataBase.save();
+    }
+
 }
