@@ -12,7 +12,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.net.BindException;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -144,11 +146,11 @@ public class ObjectSharingServer {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("[error] "+e.getMessage());
             return -1;
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return -2;
+            return -1;
         }
     }
 

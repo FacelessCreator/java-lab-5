@@ -19,12 +19,24 @@ public class MinimalCommandInterpreter implements Interpreter {
     }
 
     public void interpret(Scanner in, PrintStream out, boolean isFriendly) {
+
+        if (!in.hasNextLine()) {
+            DataBaseAnswer<Void> dbAnswer = dataBase.save();
+            if (dbAnswer.code != 0) {
+                out.println(DataBaseAnswer.describeAnswerCode(dbAnswer.code));
+            } else {
+                out.println("OK");
+            }
+            out.println("Exiting");
+            System.exit(0);
+        }
+
         String command = in.nextLine();
         switch (command) {
             case "exit": {
                 DataBaseAnswer<Void> dbAnswer = dataBase.save();
                 if (dbAnswer.code != 0) {
-                    out.println("KO " + Integer.toString(dbAnswer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(dbAnswer.code));
                 } else {
                     out.println("OK");
                 }
@@ -35,7 +47,7 @@ public class MinimalCommandInterpreter implements Interpreter {
             case "save": {
                 DataBaseAnswer<Void> dbAnswer = dataBase.save();
                 if (dbAnswer.code != 0) {
-                    out.println("KO " + Integer.toString(dbAnswer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(dbAnswer.code));
                 } else {
                     out.println("OK");
                 }
@@ -44,7 +56,7 @@ public class MinimalCommandInterpreter implements Interpreter {
             case "load": {
                 DataBaseAnswer<Void> dbAnswer = dataBase.load();
                 if (dbAnswer.code != 0) {
-                    out.println("KO " + Integer.toString(dbAnswer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(dbAnswer.code));
                 } else {
                     out.println("OK");
                 }

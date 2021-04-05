@@ -276,40 +276,6 @@ public class CommandInterpreter implements Interpreter {
         }
     }
 
-    private String describeAnswerCode(int code) {
-        String res;
-        switch (code) {
-            case DataBaseAnswer.CODE_SUCCESS:
-                res = "All is OK";
-                break;
-            case DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS:
-                res = "[warning] Object already exists";
-                break;
-            case DataBaseAnswer.CODE_OBJECT_NOT_FOUND:
-                res = "[warning] Object not found";
-                break;
-            case DataBaseAnswer.CODE_CONNECTION_FAILED:
-                res = "[error] Connection failed";
-                break;
-            case DataBaseAnswer.CODE_BAD_ANSWER:
-                res = "[error] Bad server answer";
-                break;
-            case DataBaseAnswer.CODE_BAD_REQUEST:
-                res = "[error] Bad request";
-                break;
-            case DataBaseAnswer.CODE_PERMISSION_DENIED:
-                res = "[error] Permission denied";
-                break;
-            case DataBaseAnswer.CODE_INTERNAL_ERROR:
-                res = "[error] Internal error";
-                break;
-            default:
-                res = "[error] Unknown code";
-                break;
-        }
-        return res;
-    }
-
     /**
      * Constructor
      * @param manipulator data base manipulator
@@ -384,7 +350,7 @@ public class CommandInterpreter implements Interpreter {
                 if (answer.code == 0) {
                     out.println(answer.object);
                 } else {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 }
             }
                 break;
@@ -392,7 +358,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 DataBaseAnswer<List<Movie>> answer = manipulator.getAll();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 } else {
                     for (Movie movie : answer.object) {
                         out.println(movie);
@@ -405,7 +371,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 DataBaseAnswer<Void> answer = manipulator.clear();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 }
             }
                 break;
@@ -414,7 +380,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 /*DataBaseAnswer<Void> answer = manipulator.save();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 }*/
                 System.exit(0);
             }
@@ -424,7 +390,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 DataBaseAnswer<Long> answer = manipulator.getSumOfOscarsCount();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 } else {
                     out.println(answer.object.longValue());
                 }
@@ -435,7 +401,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 DataBaseAnswer<HashMap<Long, Long>> answer = manipulator.getGroupCountingByOscarsCount();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 } else {
                     for (Long key : answer.object.keySet())
                     {
@@ -451,7 +417,7 @@ public class CommandInterpreter implements Interpreter {
                     Movie movie = interpretMovie(in, out, isFriendly);
                     DataBaseAnswer<Long> answer = manipulator.add(movie);
                     if (answer.code != 0) {
-                        out.println(describeAnswerCode(answer.code));
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                     } else {
                         out.printf("Object added; id: %d\n", answer.object.longValue());
                     }
@@ -474,7 +440,7 @@ public class CommandInterpreter implements Interpreter {
                             Movie movie = interpretMovie(in, out, isFriendly);
                             DataBaseAnswer<Void> answer = manipulator.replace(id, movie);
                             if (answer.code != 0) {
-                                out.println(describeAnswerCode(answer.code));
+                                out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                             }
                         } catch (EOFException | InterpretingFailedException e) {
                             out.println(e.getMessage());
@@ -499,7 +465,7 @@ public class CommandInterpreter implements Interpreter {
                         int id = Integer.valueOf(args.get(1));
                         DataBaseAnswer<Void> answer = manipulator.remove(id);
                         if (answer.code != 0) {
-                            out.println(describeAnswerCode(answer.code));
+                            out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                         }
                     } catch (NumberFormatException e) {
                         if (isFriendly) {
@@ -516,7 +482,7 @@ public class CommandInterpreter implements Interpreter {
                     Movie movie = interpretMovie(in, out, isFriendly);
                     DataBaseAnswer<Boolean> answer = manipulator.addIfMax(movie);
                     if (answer.code != 0) {
-                        out.println(describeAnswerCode(answer.code));
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                     } else {
                         if (!answer.object.booleanValue()) {
                             out.println("[normal] your object is not maximum");
@@ -534,7 +500,7 @@ public class CommandInterpreter implements Interpreter {
                     Movie movie = interpretMovie(in, out, isFriendly);
                     DataBaseAnswer<Void> answer = manipulator.removeLower(movie);
                     if (answer.code != 0) {
-                        out.println(describeAnswerCode(answer.code));
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -548,7 +514,7 @@ public class CommandInterpreter implements Interpreter {
                     Person operator = interpretPerson(in, out, isFriendly, false);
                     DataBaseAnswer<Void> answer = manipulator.removeAllByOperator(operator);
                     if (answer.code != 0) {
-                        out.println(describeAnswerCode(answer.code));
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -580,7 +546,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 DataBaseAnswer<Void> answer = manipulator.save();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 }
             }    
             break;
@@ -589,7 +555,7 @@ public class CommandInterpreter implements Interpreter {
             {
                 DataBaseAnswer<Void> answer = manipulator.load();
                 if (answer.code != 0) {
-                    out.println(describeAnswerCode(answer.code));
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 }
             }
             break;*/

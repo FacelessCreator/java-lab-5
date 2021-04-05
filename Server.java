@@ -39,8 +39,12 @@ public class Server {
         ObjectCommandInterpreter interpreter = new ObjectCommandInterpreter(dataBase);
         Interpreter consoleInterpreter = new MinimalCommandInterpreter(dataBase);
 
+        DataBaseAnswer<Void> loadAnswer = dataBase.load();
+        if (loadAnswer.code != 0) {
+            System.out.println(DataBaseAnswer.describeAnswerCode(loadAnswer.code));
+        }
+
         consoleInterpreter.init(new Scanner(System.in), System.out, true);
-        dataBase.load();
 
         ObjectSharingServer server = new ObjectSharingServer(port, 
         obj -> {
