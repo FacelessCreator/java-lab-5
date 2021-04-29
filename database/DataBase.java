@@ -11,49 +11,44 @@ import java.util.List;
  */
 public interface DataBase {
 
-    /** message code - object already exists */
-    int MESSAGE_OBJECT_ALREADY_EXISTS = -1;
-    /** message code - object is not found */
-    int MESSAGE_OBJECT_NOT_FOUND = -2;
-
     /**
      * describe data base
      * @return description
      */
-    String about();
+    DataBaseAnswer<String> about();
 
     /**
      * get status of data base
      * @return status
      */
-    String getStatus();
+    DataBaseAnswer<String> getStatus();
 
     /**
      * get count of elements inside
      * @return length
      */
-    int length();
+    DataBaseAnswer<Integer> length();
 
     /**
      * add movie to data base
      * @param movie
      * @return object identifier or message code
      */
-    long add(Movie movie);
+    DataBaseAnswer<Long> add(Movie movie);
 
     /**
      * remove object with id
      * @param id
      * @return message code
      */
-    int remove(long id);
+    DataBaseAnswer<Void> remove(long id);
 
     /**
      * get object with id
      * @param id
      * @return movie or null
      */
-    Movie get(long id);
+    DataBaseAnswer<Movie> get(long id);
 
     /**
      * replace object with another object (doesn't change id)
@@ -61,35 +56,39 @@ public interface DataBase {
      * @param movie another object
      * @return message code
      */
-    int replace(long id, Movie movie);
+    DataBaseAnswer<Void> replace(long id, Movie movie);
 
     /** 
      * remove all objects from data base
      */
-    void clear();
+    DataBaseAnswer<Void> clear();
     
     /**
      * get list of identifiers
      * @return id list
      */
-    List<Long> getIdList();
+    DataBaseAnswer<List<Long>> getIdList();
 
     /**
      * get max element of data base
      * @return movie or null
      */
-    Movie getMaxElement();
+    DataBaseAnswer<Movie> getMaxElement();
 
     /**
      * get min element of data base
      * @return movie or null
      */
-    Movie getMinElement();
+    DataBaseAnswer<Movie> getMinElement();
 
     /**
      * get movies with this operator
      * @param operator
      * @return movies list
      */
-    List<Movie> searchByOperator(Person operator);
+    DataBaseAnswer<List<Movie>> searchByOperator(Person operator);
+
+    DataBaseAnswer<Void> load();
+
+    DataBaseAnswer<Void> save();
 }

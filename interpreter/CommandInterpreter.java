@@ -21,6 +21,7 @@ import javax.xml.bind.Unmarshaller;
 import org.xml.sax.SAXException;
 
 import database.DataBase;
+import database.DataBaseAnswer;
 import database.DataManipulator;
 import movie.*;
 
@@ -35,25 +36,22 @@ public class CommandInterpreter implements Interpreter {
     private DataManipulator manipulator;
 
     /** commands history */
-    private List<String> history;
+    protected List<String> history;
 
     /** path to help description file */
-    private final static String HELP_FILEPATH = "help.txt";
-
-    /** path to local save file */
-    private String saveFilePath;
+    protected final static String HELP_FILEPATH = "help.txt";
 
     /** level of recursion (increases when user or script uses execute_script command) */
-    private int recursionLevel = 0;
+    protected int recursionLevel = 0;
     
     /** flag to prevent unexpected recursion */
-    private boolean allowRecursion = false;
+    protected boolean allowRecursion = false;
 
     /**
      * read help page
      * @return help page or warning message
      */
-    private String readHelp() {
+    protected String readHelp() {
 
         File helpFile = new File(HELP_FILEPATH);
         if (!helpFile.exists())
@@ -88,7 +86,7 @@ public class CommandInterpreter implements Interpreter {
      * @throws InterpretingFailedException
      * @throws EOFException
      */
-    private <E extends Enum<E>> E interpretEnum(Class<E> clazz, Scanner in, PrintStream out, boolean isFriendly, String comment, boolean allowNull) throws InterpretingFailedException, EOFException {
+    protected <E extends Enum<E>> E interpretEnum(Class<E> clazz, Scanner in, PrintStream out, boolean isFriendly, String comment, boolean allowNull) throws InterpretingFailedException, EOFException {
         E res;
         List<E> variants = Arrays.asList(clazz.getEnumConstants());
         StringBuilder variantsString = new StringBuilder();
@@ -131,7 +129,7 @@ public class CommandInterpreter implements Interpreter {
      * @throws InterpretingFailedException
      * @throws EOFException
      */
-    private Long interpretLong(Scanner in, PrintStream out, boolean isFriendly, String comment, Predicate<Long> predicate, boolean allowNull) throws InterpretingFailedException, EOFException {
+    protected Long interpretLong(Scanner in, PrintStream out, boolean isFriendly, String comment, Predicate<Long> predicate, boolean allowNull) throws InterpretingFailedException, EOFException {
         do {
             if (isFriendly) {
                 out.printf("%s\n* ", comment);
@@ -169,7 +167,7 @@ public class CommandInterpreter implements Interpreter {
      * @throws InterpretingFailedException
      * @throws EOFException
      */
-    private String interpretString(Scanner in, PrintStream out, boolean isFriendly, String comment, Predicate<String> predicate) throws InterpretingFailedException, EOFException {
+    protected String interpretString(Scanner in, PrintStream out, boolean isFriendly, String comment, Predicate<String> predicate) throws InterpretingFailedException, EOFException {
         do {
             if (isFriendly) {
                 out.printf("%s\n* ", comment);
@@ -199,7 +197,7 @@ public class CommandInterpreter implements Interpreter {
      * @throws InterpretingFailedException
      * @throws EOFException
      */
-    private Person interpretPerson(Scanner in, PrintStream out, boolean isFriendly, boolean allowNull) throws InterpretingFailedException, EOFException {
+    protected Person interpretPerson(Scanner in, PrintStream out, boolean isFriendly, boolean allowNull) throws InterpretingFailedException, EOFException {
         String name = interpretString(in, out, isFriendly, "Input name. It mustn't be empty", s -> s != null && s.length() > 0);
         String passportId = interpretString(in, out, isFriendly, "Input passpord Id. It's more than 3 symbols or be empty. Press ENTER to left it empty", s -> s.length() == 0 || s.length() >= 4);
         Color eyeColor = interpretEnum(Color.class, in, out, isFriendly, "Input eye color. Press ENTER to left it null", true);
@@ -217,7 +215,7 @@ public class CommandInterpreter implements Interpreter {
      * @throws InterpretingFailedException
      * @throws EOFException
      */
-    private Coordinates interpretCoordinates(Scanner in, PrintStream out, boolean isFriendly, boolean allowNull) throws InterpretingFailedException, EOFException {
+    protected Coordinates interpretCoordinates(Scanner in, PrintStream out, boolean isFriendly, boolean allowNull) throws InterpretingFailedException, EOFException {
         int x = interpretLong(in, out, isFriendly, "Input x > -746", i -> i > -746, false).intValue();
         long y = interpretLong(in, out, isFriendly, "Input y > -951", l -> l > -951, false).longValue();
         return new Coordinates(x, y);
@@ -232,7 +230,7 @@ public class CommandInterpreter implements Interpreter {
      * @throws InterpretingFailedException
      * @throws EOFException
      */
-    private Movie interpretMovie(Scanner in, PrintStream out, boolean isFriendly) throws InterpretingFailedException, EOFException {
+    protected Movie interpretMovie(Scanner in, PrintStream out, boolean isFriendly) throws InterpretingFailedException, EOFException {
         String name = interpretString(in, out, isFriendly, "Input name", s -> s.length() > 0);
         Coordinates coordinates = interpretCoordinates(in, out, isFriendly, false);
         long oscarsCount = interpretLong(in, out, isFriendly, "Input oscars count; It must be more than 0", l -> l > 0, false).longValue();
@@ -248,7 +246,7 @@ public class CommandInterpreter implements Interpreter {
      * @param out output stream
      * @param filePath path to the file
      */
-    private void executeFile(PrintStream out, String filePath) {
+    protected void executeFile(PrintStream out, String filePath) {
 
         if (recursionLevel > 1 && !allowRecursion) {
             out.println("[warning] Recursion denied. Use flag -r to ignore it");
@@ -279,151 +277,17 @@ public class CommandInterpreter implements Interpreter {
     }
 
     /**
-     * Save movies to local XML file
-     * @param out output stream
-     * @param filePath path to the file
-     * @param movies movies list 
-     */
-    private void saveXML(PrintStream out, String filePath, List<Movie> movies) {
-        Movies wrappedMovies = new Movies();
-        wrappedMovies.setMovies(movies);
-        try {
-            JAXBContext context = JAXBContext.newInstance(Movies.class);
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            File xmlFile = new File(filePath);
-            marshaller.marshal(wrappedMovies, xmlFile);
-        } catch (JAXBException e) {
-            out.printf("[error] saving into file %s failed. ", filePath);
-            Throwable realException = e.getLinkedException();
-            if (realException == null) {
-                out.println("Reason is unusual");
-            } else {
-                if (realException instanceof FileNotFoundException) {
-                    out.println("Writing permission denied");
-                } else {
-                    out.println("Reason is unusual");
-                }
-            }
-        }
-    }
-
-    /**
-     * Check paramenters of coordinates object
-     * @param coordinates
-     * @return are parameters correct
-     */
-    private boolean checkCoordinates(Coordinates coordinates) {
-        return coordinates.getX() > -746 && coordinates.getY() > -951;
-    }
-
-    /**
-     * Check paramenters of operator
-     * @param operator
-     * @return are parameters correct
-     */
-    private boolean checkOperator(Person operator) {
-        String name = operator.getName();
-        String passportId = operator.getPassportId();
-        Country nationality = operator.getNationality();
-        return 
-            name != null 
-            && name.length() > 0 
-            && (passportId.length() == 0 || passportId.length() >= 4)
-            && nationality != null;
-    }
-
-    /**
-     * Check paramenters of movie
-     * @param movie
-     * @return are parameters correct
-     */
-    private boolean checkMovie(Movie movie) {
-        String name = movie.getName();
-        long oscarsCount = movie.getOscarsCount();
-        long length = movie.getLength();
-        Coordinates coordinates = movie.getCoordinates();
-        Person operator = movie.getOperator();
-        return
-            name != null
-            && name.length() > 0
-            && coordinates != null
-            && checkCoordinates(coordinates)
-            && oscarsCount > 0
-            && length > 0
-            && (operator == null || checkOperator(operator));
-    }
-
-    /**
-     * Load movies from XML file
-     * @param out output stream
-     * @param filePath path to the file
-     * @return list of movies
-     */
-    private List<Movie> loadXML(PrintStream out, String filePath) {
-        try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(Movies.class);
-            Unmarshaller un = jaxbContext.createUnmarshaller();
-            File xmlFile = new File(filePath);
-            if (!xmlFile.exists()) {
-                out.printf("[error] Loading from file %s failed. File does not exist\n", filePath);
-                return null;
-            }
-            if (!xmlFile.canRead()) {
-                out.printf("[error] loading from file %s failed. Reading permission denied\n", filePath);
-                return null;
-            }
-            Movies wrappedMovies = (Movies) un.unmarshal(xmlFile);
-            List<Movie> movies = new ArrayList<Movie>();
-            int countOfBrokenObjects = 0;
-            List<Movie> uncheckedMovies = wrappedMovies.getMovies();
-            if (uncheckedMovies == null) {
-                return null;
-            }
-            for (Movie movie : uncheckedMovies) {
-                if (checkMovie(movie)) {
-                    movies.add(movie);
-                } else {
-                    ++countOfBrokenObjects;
-                }
-            }
-            if (countOfBrokenObjects > 0) {
-                out.printf("[warning] file %s successfully loaded but %d broken objects were not loaded\n", filePath, countOfBrokenObjects);
-            }
-            return movies;
-        } catch (JAXBException e) {
-            out.printf("[error] loading from file %s failed. ", filePath);
-            Throwable realException = e.getLinkedException();
-            if (realException == null) {
-                out.println("Reason is unusual");
-            } else {
-                if (realException instanceof SAXException) {
-                    out.println("XML is broken");
-                } else {
-                    out.println("Reason is unusual");
-                }
-            }
-            return null;
-        }
-    }
-
-    /**
      * Constructor
      * @param manipulator data base manipulator
      * @param saveFilePath path to save and load XML
      */
-    public CommandInterpreter(DataManipulator manipulator, String saveFilePath) {
-        this.saveFilePath = saveFilePath;
+    public CommandInterpreter(DataManipulator manipulator) {
         this.manipulator = manipulator;
         history = new ArrayList<String>();
     }
 
     public void init(Scanner in, PrintStream out, boolean isFriendly) {
-        List<Movie> movies = loadXML(out, saveFilePath);
-        if (movies != null) {
-            manipulator.clear();
-            manipulator.addAll(movies);
-        }
+        
     }
 
     public void interpret(Scanner in, PrintStream out, boolean isFriendly) {
@@ -481,36 +345,68 @@ public class CommandInterpreter implements Interpreter {
                 break;
 
             case "info":
-                out.println(manipulator.getInfo());
-                break;
-
-            case "show":
             {
-                List<Movie> movies = manipulator.getAll();
-                for (Movie movie : movies) {
-                    out.println(movie);
+                DataBaseAnswer<String> answer = manipulator.getInfo();
+                if (answer.code == 0) {
+                    out.println(answer.object);
+                } else {
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                 }
             }
-            break;
+                break;
+            case "show":
+            {
+                DataBaseAnswer<List<Movie>> answer = manipulator.getAll();
+                if (answer.code != 0) {
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                } else {
+                    for (Movie movie : answer.object) {
+                        out.println(movie);
+                    }
+                }
+            }
+                break;
 
             case "clear":
-                manipulator.clear();
+            {
+                DataBaseAnswer<Void> answer = manipulator.clear();
+                if (answer.code != 0) {
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                }
+            }
                 break;
 
             case "exit":
+            {
+                /*DataBaseAnswer<Void> answer = manipulator.save();
+                if (answer.code != 0) {
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                }*/
                 System.exit(0);
+            }
                 break;
 
             case "sum_of_oscars_count":
-                out.println(manipulator.getSumOfOscarsCount());
+            {
+                DataBaseAnswer<Long> answer = manipulator.getSumOfOscarsCount();
+                if (answer.code != 0) {
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                } else {
+                    out.println(answer.object.longValue());
+                }
+            }
                 break;
 
             case "group_counting_by_oscars_count":
             {
-                HashMap<Long, Long> groups = manipulator.getGroupCountingByOscarsCount();
-                for (Long key : groups.keySet())
-                {
-                    System.out.printf("%d oscars : %d films\n", key.longValue(), groups.get(key).longValue());
+                DataBaseAnswer<HashMap<Long, Long>> answer = manipulator.getGroupCountingByOscarsCount();
+                if (answer.code != 0) {
+                    out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                } else {
+                    for (Long key : answer.object.keySet())
+                    {
+                        System.out.printf("%d oscars : %d films\n", key.longValue(), answer.object.get(key).longValue());
+                    }
                 }
             }
             break;
@@ -519,9 +415,11 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    long errorCode = manipulator.add(movie);
-                    if (errorCode == DataBase.MESSAGE_OBJECT_ALREADY_EXISTS) {
-                        out.println("[warning] adding failed. Object already exists");
+                    DataBaseAnswer<Long> answer = manipulator.add(movie);
+                    if (answer.code != 0) {
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                    } else {
+                        out.printf("Object added; id: %d\n", answer.object.longValue());
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -540,11 +438,9 @@ public class CommandInterpreter implements Interpreter {
                         int id = Integer.valueOf(args.get(1));
                         try {
                             Movie movie = interpretMovie(in, out, isFriendly);
-                            int res = manipulator.replace(id, movie);
-                            if (isFriendly && res != 0) {
-                                if (res == DataBase.MESSAGE_OBJECT_NOT_FOUND) {
-                                    out.println("[warning] updating failed. Object not found");
-                                }
+                            DataBaseAnswer<Void> answer = manipulator.replace(id, movie);
+                            if (answer.code != 0) {
+                                out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                             }
                         } catch (EOFException | InterpretingFailedException e) {
                             out.println(e.getMessage());
@@ -567,11 +463,9 @@ public class CommandInterpreter implements Interpreter {
                 } else {
                     try {
                         int id = Integer.valueOf(args.get(1));
-                        int res = manipulator.remove(id);
-                        if (isFriendly && res != 0) {
-                            if (res == DataBase.MESSAGE_OBJECT_NOT_FOUND) {
-                                out.println("[warning] updating failed. Object not found");
-                            }
+                        DataBaseAnswer<Void> answer = manipulator.remove(id);
+                        if (answer.code != 0) {
+                            out.println(DataBaseAnswer.describeAnswerCode(answer.code));
                         }
                     } catch (NumberFormatException e) {
                         if (isFriendly) {
@@ -586,8 +480,13 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    if (!manipulator.addIfMax(movie)) {
-                        out.println("[normal] your object is not maximum");
+                    DataBaseAnswer<Boolean> answer = manipulator.addIfMax(movie);
+                    if (answer.code != 0) {
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                    } else {
+                        if (!answer.object.booleanValue()) {
+                            out.println("[normal] your object is not maximum");
+                        }
                     }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
@@ -599,7 +498,10 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Movie movie = interpretMovie(in, out, isFriendly);
-                    manipulator.removeLower(movie);
+                    DataBaseAnswer<Void> answer = manipulator.removeLower(movie);
+                    if (answer.code != 0) {
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                    }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
                 }
@@ -610,7 +512,10 @@ public class CommandInterpreter implements Interpreter {
             {
                 try {
                     Person operator = interpretPerson(in, out, isFriendly, false);
-                    manipulator.removeAllByOperator(operator);
+                    DataBaseAnswer<Void> answer = manipulator.removeAllByOperator(operator);
+                    if (answer.code != 0) {
+                        out.println(DataBaseAnswer.describeAnswerCode(answer.code));
+                    }
                 } catch (EOFException | InterpretingFailedException e) {
                     out.println(e.getMessage());
                 }
@@ -633,33 +538,6 @@ public class CommandInterpreter implements Interpreter {
                     }
                     
                     executeFile(out, args.get(1));
-                }
-            }
-            break;
-
-            case "save":
-            {
-                List<Movie> movies = manipulator.getAll();
-                saveXML(out, saveFilePath, movies);
-            }    
-            break;
-
-            case "load":
-            {
-                List<Movie> movies = loadXML(out, saveFilePath);
-                if (movies != null) {
-                    manipulator.clear();
-                    manipulator.addAll(movies);
-                }
-            }
-            break;
-
-            case "save_file_path":
-            {
-                if (args.size() < 2) {
-                    out.println(saveFilePath);
-                } else {
-                    saveFilePath = args.get(1);
                 }
             }
             break;

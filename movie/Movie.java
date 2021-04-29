@@ -1,5 +1,6 @@
 package movie;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import javax.xml.bind.annotation.*;
@@ -12,7 +13,7 @@ import javax.xml.bind.annotation.*;
 @XmlType(name = "movie")
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.NONE)
-public class Movie implements Comparable<Movie> {
+public class Movie implements Comparable<Movie>, Serializable {
     
     /** unique identifier */
     private long id = -1;
@@ -27,6 +28,8 @@ public class Movie implements Comparable<Movie> {
 
     /** time of adding to data base */
     private LocalDateTime creationTime;
+
+    private String creatorName;
 
     /** count of oscars that film got */
     @XmlElement
@@ -106,6 +109,14 @@ public class Movie implements Comparable<Movie> {
      */
     public void setCreationTime(LocalDateTime time) {
         creationTime = time;
+    }
+
+    public String getCreatorName() {
+        return creatorName;
+    }
+
+    public void setCreatorName(String name) {
+        creatorName = name;
     }
 
     /**
@@ -189,6 +200,8 @@ public class Movie implements Comparable<Movie> {
         .append(mpaaRating)
         .append("; operator ")
         .append(operator)
+        .append("; creatorName ")
+        .append(creatorName)
         .append("]");
         return res.toString();
     }
