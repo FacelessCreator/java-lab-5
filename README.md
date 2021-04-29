@@ -1,8 +1,9 @@
-# Лабораторная работа 5
+# Лабораторная работа 7
 - Автор: Щукин Александр, R3136
-- Вариант: 312824
+- Вариант: 5-312824, 6-331121, 7-5512
 
-Диаграмма классов представлена ниже в виде файла или на [draw.io](https://drive.google.com/file/d/1OcaXvCGxRgbvjMLHHbdlvx2qb1qY7Bw_/view?usp=sharing)
-![UML](https://github.com/FacelessCreator/java-lab-5/blob/main/Java%20Lab%205.png "UML")
+Диаграмма классов представлена ниже в виде файла или на [draw.io](ADDRESS)
+![UML](ADDRESS "UML")
 
 В проекте используется набор внешних библиотек JAXB, доступный для скачивания [здесь](https://javaee.github.io/jaxb-v2/).
+Используется драйвер PostgreSQL, ссылка на источник [здесь](https://jdbc.postgresql.org/download.html).
