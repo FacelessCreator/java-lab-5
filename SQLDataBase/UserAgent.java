@@ -31,7 +31,7 @@ public class UserAgent {
             dataBaseConnection = DriverManager.getConnection(dataBaseURL, userName, password);
             dataBaseStatement = dataBaseConnection.createStatement();
         } catch (SQLException e) {
-            //TODO: handle exception
+            e.printStackTrace();
         }
     }
 

@@ -27,7 +27,7 @@ public class ObjectSharingServer {
     private ServerSocket serverSocket;
 
     private ExecutorService readingExecutor = Executors.newCachedThreadPool();
-    private ForkJoinPool processingExecutor = new ForkJoinPool(); // TODO setup parallelism level
+    private ForkJoinPool processingExecutor = new ForkJoinPool();
 
     private class ClientProcessingRunnable implements Runnable {
     
@@ -55,7 +55,6 @@ public class ObjectSharingServer {
 
                 clientSocket.close();
             } catch (Exception e) {
-                //TODO: handle exception
                 e.printStackTrace();
             }
         }
@@ -82,7 +81,6 @@ public class ObjectSharingServer {
                 ClientProcessingRunnable clientProcessingRunnable = new ClientProcessingRunnable(clientSocket, message);
                 processingExecutor.submit(clientProcessingRunnable);
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
@@ -97,7 +95,6 @@ public class ObjectSharingServer {
                 readingExecutor.submit(clientReadingRunnable);
             }
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     };
@@ -115,7 +112,6 @@ public class ObjectSharingServer {
             answerThread = new Thread(answerRunnable);
             answerThread.start();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }

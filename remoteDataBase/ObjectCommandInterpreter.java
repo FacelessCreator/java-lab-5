@@ -97,6 +97,7 @@ public class ObjectCommandInterpreter {
             }
             return result;
         } catch (Exception e) {
+            e.printStackTrace();
             return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_BAD_REQUEST, null);
         }
     }
@@ -106,6 +107,7 @@ public class ObjectCommandInterpreter {
             CommandWrapper wrapper = (CommandWrapper) command;
             return interpret(wrapper);
         } catch (ClassCastException e) {
+            e.printStackTrace();
             return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_BAD_REQUEST, null);
         }
     } 

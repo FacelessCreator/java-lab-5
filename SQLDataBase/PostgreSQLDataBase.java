@@ -3,8 +3,11 @@ package SQLDataBase;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +64,7 @@ public class PostgreSQLDataBase implements AuthorizedDataBase {
             );
         movie.setId(resultSet.getInt(1));
         movie.setCreatorName(resultSet.getString(14));
-        //movie.setCreationTime(resultSet.getTimestamp(3)); // TODO add this functionalitya
+        movie.setCreationTime(resultSet.getTimestamp(3).toLocalDateTime());
         return movie;
         } catch (SQLException e) {
             return null;
@@ -78,7 +81,7 @@ public class PostgreSQLDataBase implements AuthorizedDataBase {
             dataBaseConnection = DriverManager.getConnection(dataBaseURL, userName, password);
             dataBaseStatement = dataBaseConnection.createStatement();
         } catch (SQLException e) {
-            //TODO: handle exception
+            e.printStackTrace();
         }
     }
 
@@ -102,7 +105,6 @@ public class PostgreSQLDataBase implements AuthorizedDataBase {
                 return new DataBaseAnswer<String>(DataBaseAnswer.CODE_SUCCESS, "offline");
             }
         } catch (SQLException e) {
-            //TODO: handle exception
             return new DataBaseAnswer<String>(DataBaseAnswer.CODE_SUCCESS, "fail");
         }
     }
@@ -160,9 +162,12 @@ public class PostgreSQLDataBase implements AuthorizedDataBase {
             );
             int result = dataBaseStatement.executeUpdate(addingQuery);
             if (result != 1) {
-                return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_SQL_ERROR, null);
+                return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS, null);
             }
         } catch (SQLException e) {
+            if (e.getMessage().indexOf("duplicate") != -1) {
+                return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS, null);
+            }
             return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_SQL_ERROR, null);
         }
         return new DataBaseAnswer<Long>(DataBaseAnswer.CODE_SUCCESS, id);
@@ -230,6 +235,9 @@ public class PostgreSQLDataBase implements AuthorizedDataBase {
                 return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_OBJECT_NOT_FOUND, null);
             }
         } catch (Exception e) {
+            if (e.getMessage().indexOf("duplicate") != -1) {
+                return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_OBJECT_ALREADY_EXISTS, null);
+            }
             return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_SQL_ERROR, null);
         }
         return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_SUCCESS, null); 
@@ -318,13 +326,11 @@ public class PostgreSQLDataBase implements AuthorizedDataBase {
 
     @Override
     public DataBaseAnswer<Void> load() {
-        // TODO add operation
         return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_OPERATION_UNSUPPORTED, null);
     }
 
     @Override
     public DataBaseAnswer<Void> save() {
-        // TODO add operation
         return new DataBaseAnswer<Void>(DataBaseAnswer.CODE_OPERATION_UNSUPPORTED, null);
     }
 }

@@ -1,5 +1,6 @@
 
 import java.util.Scanner;
+import java.util.concurrent.locks.ReentrantLock;
 
 import SQLDataBase.PostgreSQLDataBase;
 import SQLDataBase.UserAgent;
@@ -38,9 +39,13 @@ public class Server {
         UserAgent userAgent = new UserAgent(dataBaseURL, userName, password);
         ObjectCommandInterpreter objectInterpreter = new ObjectCommandInterpreter(dataBase, userAgent);
 
+        ReentrantLock locker = new ReentrantLock();
+
         ObjectSharingServer server = new ObjectSharingServer(port, 
         obj -> {
+            locker.lock();
             Object res = objectInterpreter.interpret(obj);
+            locker.unlock();
             return res;
         }
         );
