@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1400.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="userapp.MainController">
+   <top>
+      <HBox prefHeight="50.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+         <children>
+            <Button fx:id="languageButton" mnemonicParsing="false" onAction="#languageButtonEvent" prefHeight="50.0" prefWidth="50.0">
+               <graphic>
+                  <ImageView fitHeight="46.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@../images/earth.png" />
+                     </image>
+                  </ImageView>
+               </graphic>
+            </Button>
+            <Button fx:id="logoutButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#logoutButtonEvent" prefHeight="50.0" prefWidth="104.0" text="Logout" />
+            <Text fx:id="userNameText" strokeType="OUTSIDE" strokeWidth="0.0" text="Username" textAlignment="CENTER" wrappingWidth="133.498046875" />
+         </children>
+      </HBox>
+   </top>
+   <left>
+      <TableView fx:id="elementsTableView" prefHeight="850.0" prefWidth="1100.0" BorderPane.alignment="CENTER">
+         <columns>
+            <TableColumn fx:id="idColumn" prefWidth="75.0" text="Id" />
+            <TableColumn fx:id="nameColumn" prefWidth="75.0" text="Name" />
+            <TableColumn fx:id="creatorNameColumn" prefWidth="75.0" text="Creator" />
+            <TableColumn fx:id="coordinateXColumn" prefWidth="75.0" text="Coord X" />
+            <TableColumn fx:id="coordinateYColumn" prefWidth="75.0" text="Coord Y" />
+            <TableColumn fx:id="oscarsCountColumn" prefWidth="75.0" text="Oscars count" />
+            <TableColumn fx:id="lengthColumn" prefWidth="75.0" text="Length" />
+            <TableColumn fx:id="movieGenreColumn" prefWidth="75.0" text="Movie genre" />
+            <TableColumn fx:id="mpaaRatingColumn" prefWidth="75.0" text="Mpaa rating" />
+            <TableColumn fx:id="operatorNameColumn" prefWidth="75.0" text="Op name" />
+            <TableColumn fx:id="operatorIdColumn" prefWidth="75.0" text="Op Id" />
+            <TableColumn fx:id="operatorEyeColorColumn" prefWidth="75.0" text="Op eye color" />
+            <TableColumn fx:id="operatorNationalityColumn" prefWidth="75.0" text="Op nationality" />
+            <TableColumn fx:id="creationDateColumn" prefWidth="124.0" text="Creation date" />
+         </columns>
+      </TableView>
+   </left>
+   <right>
+      <Canvas fx:id="elementsCanvas" height="300.0" width="300.0" BorderPane.alignment="CENTER" />
+   </right>
+   <bottom>
+      <VBox prefHeight="100.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox prefHeight="50.0" prefWidth="200.0">
+               <children>
+                  <Button fx:id="allElementsButton" mnemonicParsing="false" onAction="#allElementsButtonEvent" prefHeight="50.0" prefWidth="100.0" text="View all" />
+                  <Button fx:id="searchByOperatorButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#searchByOperatorButtonEvent" prefHeight="50.0" prefWidth="200.0" text="Remove by operator" />
+                  <Button fx:id="informationButton" layoutX="60.0" layoutY="10.0" mnemonicParsing="false" onAction="#informationButtonEvent" prefHeight="50.0" prefWidth="100.0" text="Information" />
+                  <Button fx:id="maxElementButton" layoutX="110.0" layoutY="10.0" mnemonicParsing="false" onAction="#maxElementButtonEvent" prefHeight="50.0" prefWidth="100.0" text="Add if max" />
+                  <Button fx:id="minElementButton" layoutX="160.0" layoutY="10.0" mnemonicParsing="false" onAction="#minElementButtonEvent" prefHeight="50.0" prefWidth="150.0" text="Remove lower" />
+                  <Button fx:id="addElementButton" layoutX="210.0" layoutY="10.0" mnemonicParsing="false" onAction="#addElementButtonEvent" prefHeight="50.0" prefWidth="100.0" text="Add" />
+                  <Button fx:id="clearButton" layoutX="660.0" layoutY="10.0" mnemonicParsing="false" onAction="#clearButtonEvent" prefHeight="50.0" prefWidth="100.0" text="Clear" />
+                  <Button fx:id="groupByOscarsCountButton" layoutX="760.0" layoutY="10.0" mnemonicParsing="false" onAction="#groupByOscarsCountButtonEvent" prefHeight="50.0" prefWidth="200.0" text="Group by oscars count" />
+                  <Button fx:id="filterButton" layoutX="860.0" layoutY="10.0" mnemonicParsing="false" onAction="#filterButtonEvent" prefHeight="50.0" prefWidth="150.0" text="Filter and sort" />
+               </children>
+            </HBox>
+            <Text fx:id="statusBarText" strokeType="OUTSIDE" strokeWidth="0.0" wrappingWidth="1199.7294921875" />
+         </children>
+      </VBox>
+   </bottom>
+</BorderPane>

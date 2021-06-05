@@ -3,6 +3,8 @@ package movie;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import userapp.Localizer;
+
 /**
  * Country do describe objects
  * @author Alexandr Shchukin
@@ -12,8 +14,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement
 public enum Country {
     
-    RUSSIA("Russia"), USA("United States"), ITALY("Italy"),
-    THAILAND("Thailand"), NORTH_KOREA("North Korea");
+    RUSSIA("country.russia"), USA("country.usa"), ITALY("country.italy"),
+    THAILAND("country.thailand"), NORTH_KOREA("country.north_korea");
     
     /** readable name */
     private final String NAME;

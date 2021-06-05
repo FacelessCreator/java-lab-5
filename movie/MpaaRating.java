@@ -3,6 +3,8 @@ package movie;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import userapp.Localizer;
+
 /**
  * Mpaa rating to describe movies
  * @author Alexandr Shchukin
@@ -12,7 +14,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement
 public enum MpaaRating {
     
-    G("G"), PG_13("PG 13"), R("R");
+    G("mpaa_rating.g"), PG_13("mpaa_rating.pg_13"), R("mpaa_rating.r");
 
     /** readable name */
     private final String NAME;

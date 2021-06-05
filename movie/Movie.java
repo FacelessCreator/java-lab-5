@@ -127,6 +127,22 @@ public class Movie implements Comparable<Movie>, Serializable {
         return operator;
     }
 
+    public String getOperatorName() {
+        return operator.getName();
+    }
+
+    public String getOperatorId() {
+        return operator.getPassportId();
+    }
+
+    public Color getOperatorEyeColor() {
+        return operator.getEyeColor();
+    }
+
+    public Country getOperatorNationality() {
+        return operator.getNationality();
+    }
+
     /**
      * get count of oscars
      * @return count
@@ -173,6 +189,14 @@ public class Movie implements Comparable<Movie>, Serializable {
      */
     public Coordinates getCoordinates() {
         return coordinates;
+    }
+
+    public int getCoordinateX() {
+        return coordinates.getX();
+    }
+
+    public long getCoordinateY() {
+        return coordinates.getY();
     }
 
     /** 

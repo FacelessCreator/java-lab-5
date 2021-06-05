@@ -175,7 +175,7 @@ public class DataManipulator {
             {
                 DataBaseAnswer<Void> answer = dataBase.remove(el.getId());
                 if (answer.code != 0) {
-                    return answer;
+                    //return answer;
                 }
             }
         }
@@ -196,7 +196,7 @@ public class DataManipulator {
         {
             DataBaseAnswer<Void> answer = dataBase.remove(el.getId());
             if (answer.code != 0) {
-                return answer;
+                //return answer;
             }
         }
         return new DataBaseAnswer<Void>(0, null);

@@ -3,6 +3,8 @@ package movie;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import userapp.Localizer;
+
 /**
  * Movie genre to describe movie
  * @author Alexandr Shchukin
@@ -12,8 +14,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement
 public enum MovieGenre {
     
-    COMEDY("comedy"), MUSICAL("musical"), THRILLER("thriller"), 
-    HORROR("horror");
+    COMEDY("genre.comedy"), MUSICAL("genre.musical"), THRILLER("genre.thriller"), 
+    HORROR("genre.horror");
 
     /** readable name */
     private final String NAME;

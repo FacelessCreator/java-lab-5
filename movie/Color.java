@@ -3,6 +3,8 @@ package movie;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import userapp.Localizer;
+
 /**
  * Color to describe objects
  * @author Alexandr Shchukin
@@ -12,8 +14,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlRootElement
 public enum Color {
     
-    BLACK("black"), BLUE("blue"), ORANGE("orange"),
-    WHITE("white"), BROWN("brown");
+    BLACK("color.black"), BLUE("color.blue"), ORANGE("color.orange"),
+    WHITE("color.white"), BROWN("color.brown");
 
     /** readable name of color */
     private final String NAME;
